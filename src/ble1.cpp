@@ -236,6 +236,7 @@ void hack_rtc_timer_init(void)
 
 }
 
+volatile bool rtc_hit = false;
 int main()
 {
 	uint32_t sys_speed = rcc_set_pll(8); // 60MHz
@@ -278,6 +279,9 @@ int main()
 
 #endif
 
+	// NOTE: really need to figure out how cleanup this syntax?
+	RTC.start_timer(CH58x_RTC_t<CH58x_RTC_reg_t>::RTC_Timer::T2_0S);
+	interrupt_ctl.enable(interrupt::irq::RTC);
 
 	bs = GAPRole_BroadcasterInit();
 	printf("gaprole init returned: %d\n", bs);
@@ -288,9 +292,13 @@ int main()
 	p1req.set(true);
 	while (1) {
 		TMOS_SystemProcess();
-		if (SYSTICK->CNT - last > 30000000) {
-			printf("tick: %d: %04d.%04d (%06d ms)\n", i++, RTC->CNT_2S, RTC->CNT_32K, RTC.msecs());
-			last = SYSTICK->CNT;
+//		if (SYSTICK->CNT - last > 30000000) {
+//			printf("tick: %d: %04d.%04d (%06d ms)\n", i++, RTC->CNT_2S, RTC->CNT_32K, RTC.msecs());
+//			last = SYSTICK->CNT;
+//		}
+		if (rtc_hit) {
+			printf("rtctick: %d: %04d.%04d (%06d ms)\n", i++, RTC->CNT_2S, RTC->CNT_32K, RTC.msecs());
+			rtc_hit = false;
 		}
 		if (lol_char) {
 			my_uart_u.write_blocking('[');
@@ -329,6 +337,13 @@ template <>
 void interrupt::handler<interrupt::irq::UART1>()
 {
 	my_uart_handler();
+}
+
+template <>
+void interrupt::handler<interrupt::irq::RTC>()
+{
+	rtc_hit = true;
+	RTC->FLAG_CTRL |= (1<<4); // clear timer flag
 }
 
 #endif
