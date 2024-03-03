@@ -265,7 +265,7 @@ int main()
 //	interrupt_ctl.enable(my_uart_p1_irq);
 
 
-	printf("Booted at %lu\n", sys_speed);
+	printf("Booted 2024 at %lu\n", sys_speed);
 
 	led.set_mode(Pin::Output, Pin::Pull::Floating, Pin::Drive::Low5);
 
