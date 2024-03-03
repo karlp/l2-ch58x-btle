@@ -229,7 +229,9 @@ void hack_rtc_timer_init(void)
 	SYSCFG.unlock_safe();
 	// R8_CK32K_CONFIG |= RB_CLK_OSC32K_XT | RB_CLK_INT32K_PON | RB_CLK_XT32K_PON;
 	// Select external, but turn on both internal and external? I dunno tom...
-	RCC->CK32K_CONFIG |= (1<<2) | (1<<1) | (1<<0);
+	//RCC->CK32K_CONFIG |= (1<<2) | (1<<1) | (1<<0);
+	// external power on, and select it.
+	RCC->CK32K_CONFIG |= (1<<2) | (1<<0);
 	SYSCFG.lock_safe();
 
 	RTC.init(2024, 3, 4, 21, 50, 12);
