@@ -281,8 +281,7 @@ int main()
 
 #endif
 
-	// NOTE: really need to figure out how cleanup this syntax?
-	RTC.start_timer(CH58x_RTC_t<CH58x_RTC_reg_t>::RTC_Timer::T2_0S);
+	RTC.start_timer(RTC_Timer::T2_0S);
 	interrupt_ctl.enable(interrupt::irq::RTC);
 
 	bs = GAPRole_BroadcasterInit();
