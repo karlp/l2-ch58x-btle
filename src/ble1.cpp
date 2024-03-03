@@ -231,24 +231,8 @@ void hack_rtc_timer_init(void)
 	// Select external, but turn on both internal and external? I dunno tom...
 	RCC->CK32K_CONFIG |= (1<<2) | (1<<1) | (1<<0);
 	SYSCFG.lock_safe();
-	
-	// RTC_InitTime(2020, 1, 1, 0, 0, 0); //RTCʱ�ӳ�ʼ����ǰʱ��
-	SYSCFG.unlock_safe();
 
-	// so, days are since 2020-1-1, and then I need a "2 seconds" count
-	// and a "32k clock ticks" count.... yolo that shit right now.
-	int days = 892; // 2022-june-11
-	uint32_t secs2 = 0; // could not care less right now
-	uint32_t ck32ticks = 0; // could not care less right now
-	uint32_t tt = (secs2<<16 | ck32ticks);
-
-	SYSCFG.unlock_safe();
-	RTC->TRIG = days;
-	RTC->MODE_CTRL |= (1<<7); // LOAD_HI
-	SYSCFG.unlock_safe();
-	RTC->TRIG = tt;
-	RTC->MODE_CTRL |= (1<<6); // LOAD_LO
-	SYSCFG.lock_safe();
+	RTC.init(2024, 3, 4, 21, 50, 12);
 
 }
 
@@ -275,7 +259,7 @@ int main()
 	printf("%s\n", VER_LIB);
 
 	int i = 0;
-	int qq = 0;
+//	int qq = 0;
 
 
 	bStatus_t bs;
@@ -305,7 +289,7 @@ int main()
 	while (1) {
 		TMOS_SystemProcess();
 		if (SYSTICK->CNT - last > 30000000) {
-			printf("tick: %d\n", i++);
+			printf("tick: %d: %04d.%04d (%06d ms)\n", i++, RTC->CNT_2S, RTC->CNT_32K, RTC.msecs());
 			last = SYSTICK->CNT;
 		}
 		if (lol_char) {
