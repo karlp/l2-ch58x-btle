@@ -71,33 +71,6 @@ extern "C" int _write(int file, char* ptr, int len)
 	return -1;
 }
 
-#if defined(CH58x)
-
-void uart_enable(x16550_UART_t<x16550_UART_reg_t> u, uint32_t sys, int baud)
-{
-	//	SYSCFG.unlock_safe();
-	//	RCC.enable(rcc_uart);  // FIXME - this is inverted on ch58x!
-
-	auto rx_fifo = 0x3; // 7 bytes
-	// Flush and enable fifos. (ie, 16550 mode, not 16450 mode)
-	u->FCR = (rx_fifo << 6) | 0x7;
-	u->LCR = 0x3; // 8N1
-	u->IER = (1 << 6); // enable TXD output
-	u->DIV = 1; // "standard" prescaler
-
-	auto dl = sys * 2 / 1 / 16 / baud;
-	u->DL = dl;
-	u->IER |= (1 << 0); // RECV_RDY irqs
-	u->MCR |= (1 << 3); // peripheral IRQ enable..
-}
-#else
-#warning "Unsupported UART platform!"
-
-void uart_enable(void)
-{
-}
-#endif
-
 
 void rcc_init();
 
@@ -248,7 +221,7 @@ int main()
 //	p1rx.set_mode(Pin::Input, Pin::Pull::Up, Pin::Drive::Low5);
 #endif
 	p1req.set_mode(Pin::Output, Pin::Pull::Floating, Pin::Drive::Low5);
-	uart_enable(my_uart_u, sys_speed, 115200);
+	my_uart_u.init(sys_speed, 115200);
 //	uart_enable(my_uart_p1, sys_speed, 115200);
 	interrupt_ctl.enable(my_uart_u_irq);
 //	interrupt_ctl.enable(my_uart_p1_irq);
